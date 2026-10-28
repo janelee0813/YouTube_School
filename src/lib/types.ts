@@ -1,0 +1,15 @@
+export type Role = 'student' | 'instructor' | 'admin';
+export type Publish = 'draft' | 'published' | 'private';
+export type Profile = {id:string; name:string; email:string; role:Role};
+export type Course = {id:string; title:string; summary:string; body:string; preparation:string; topics:string[]; status:Publish; order:number; updated_at:string};
+export type Cohort = {id:string; course_id:string; name:string; starts_at:string|null; instructor_id:string|null; status:Publish};
+export type Enrollment = {id:string; user_id:string; cohort_id:string; status:'pending'|'active'|'revoked'};
+export type Material = {id:string; course_id:string; title:string; type:'note'|'pdf'|'worksheet'|'link'|'video'; body:string; url:string; file_path:string; file_name:string; visibility:'enrolled'|'public'; status:Publish; created_at:string; updated_at:string};
+export type Question = {id:string; user_id:string; cohort_id:string; title:string; stage:string; detail:string; url:string; topic:string; draft:boolean; status:'received'|'reviewed'|'answered'|'in_class'; answer:string; answered_at:string|null; changed_after_answer:boolean; deleted_at:string|null; created_at:string; updated_at:string; revision:number};
+export type Note = {question_id:string; body:string};
+export type Notice = {id:string; title:string; body:string; status:Publish; updated_at:string};
+export type Settings = {id:1; brand:string; contact_label:string; contact_url:string};
+export type Snapshot = {profiles:Profile[]; courses:Course[]; cohorts:Cohort[]; enrollments:Enrollment[]; materials:Material[]; questions:Question[]; notes:Note[]; notices:Notice[]; settings:Settings};
+export const statusLabels = {received:'접수',reviewed:'확인',answered:'답변 완료',in_class:'수업에서 다룸'};
+export const typeLabels = {note:'강의 노트',pdf:'PDF',worksheet:'실습지',link:'참고 링크',video:'영상'};
+export const stages = ['아직 시작 전','채널만 개설','영상 업로드 중','쉬었다가 재시작'];
