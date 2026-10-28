@@ -1,24 +1,708 @@
-'use client';
-import Link from 'next/link';
-import {useSearchParams} from 'next/navigation';
-import {useRef,useState} from 'react';
-import {Lock,ArrowUpRight,Trash2,RotateCcw,MessageCircle,CheckCircle2} from 'lucide-react';
-import {useData} from './provider';
-import {PageHead,Field,NoticeBox,Restricted,Empty,Status,ButtonLink} from './ui';
-import {enrolled,manages} from '@/lib/permissions';
-import {statusLabels,stages,type Question} from '@/lib/types';
-import {errorMessage,questionSchema} from '@/lib/validation';
-export function QuestionEditor(){const {data,user,save,demo,failNext}=useData();const params=useSearchParams();const old=data.questions.find(q=>q.id===params.get('edit')&&q.user_id===user?.id&&!q.deleted_at);const options=data.cohorts.filter(c=>c.status==='published'&&enrolled(data,user,c.id)&&data.courses.some(co=>co.id===c.course_id&&co.status==='published'));const selected=old?.cohort_id||options.find(c=>c.id===params.get('cohort')||c.course_id===params.get('course'))?.id||options[0]?.id||'';
- const [form,setForm]=useState({id:old?.id||crypto.randomUUID(),cohort_id:selected,title:old?.title||'',stage:old?.stage||'',detail:old?.detail||'',url:old?.url||'',topic:old?.topic||'',revision:old?.revision||0});const [busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState(''),[submitted,setSubmitted]=useState(old?!old.draft:false);const lock=useRef(false);
- if(!user)return <div className="container"><Restricted title="나의 고민을 안전하게 남겨주세요." href={`/login?next=${encodeURIComponent(`/questions/new?${params.toString()}`)}`}>로그인 후 원래 선택한 수업으로 돌아옵니다.</Restricted></div>;
- if(params.get('edit')&&!old)return <div className="container"><Empty title="수정할 수 있는 질문이 없습니다."/></div>;
- if(!options.length)return <div className="container"><Restricted href="/classes" title="수강 승인을 기다리고 있어요.">수업 안내에서 원하는 수업을 선택해 수강 승인을 요청해 주세요.</Restricted></div>;
- const cohort=data.cohorts.find(c=>c.id===form.cohort_id),course=data.courses.find(c=>c.id===cohort?.course_id);
- const change=(key:string,value:string)=>{setForm(f=>({...f,[key]:value}));setSuccess('');};
- async function submit(draft:boolean){if(lock.current)return;lock.current=true;setBusy(true);setError('');setSuccess('');try{const value=questionSchema.parse({...form,draft});await save({kind:'question',value});setForm(f=>({...f,revision:f.revision+1}));setSubmitted(!draft);setSuccess(draft?'임시 저장했습니다. 내 기록에서 이어 쓸 수 있어요.':'질문이 접수되었습니다. 강사가 확인한 답변은 내 기록에서 볼 수 있어요.');}catch(e){setError(errorMessage(e)||'저장에 실패했습니다. 입력은 유지됩니다.');}finally{lock.current=false;setBusy(false);}}
- return <div className="container"><PageHead eyebrow="03 / YOUR QUESTION" title="지금, 어디에서 막히나요?">정리되지 않은 고민도 괜찮아요. 수업 전에 먼저 남겨주세요.</PageHead><div className="question-layout"><form className="form-panel" onSubmit={e=>{e.preventDefault();submit(false);}}><div className="form-intro"><Lock size={16}/><span>나와 담당 강사만 볼 수 있는 비공개 질문입니다.</span></div><Field label="질문할 수업 *"><select required value={form.cohort_id} disabled={!!old} onChange={e=>{change('cohort_id',e.target.value);change('topic','');}}>{options.map(c=><option value={c.id} key={c.id}>{data.courses.find(co=>co.id===c.course_id)?.title} · {c.name}</option>)}</select></Field><Field label="가장 묻고 싶은 질문 *" hint={`${form.title.length} / 200자`}><textarea rows={3} required maxLength={200} placeholder="직장 생활과 병행하려고 하는데, 제작 시간을 어떻게 잡아야 꾸준히 할 수 있을까요?" value={form.title} onChange={e=>change('title',e.target.value)}/></Field><Field label="현재 상태" hint="선택 항목"><select value={form.stage} onChange={e=>change('stage',e.target.value)}><option value="">현재 상태를 선택해 주세요</option>{stages.map(s=><option key={s}>{s}</option>)}</select></Field><Field label="구체적인 상황과 시도한 것" hint={`${form.detail.length} / 2,000자 · 선택 항목`}><textarea rows={6} maxLength={2000} value={form.detail} onChange={e=>change('detail',e.target.value)} placeholder="어떤 상황인지, 지금까지 무엇을 시도했는지 자유롭게 적어주세요."/></Field><Field label="채널 또는 영상 주소" hint="선택 항목 · https://로 시작하는 주소"><input type="url" maxLength={2000} placeholder="https://youtube.com/..." value={form.url} onChange={e=>change('url',e.target.value)}/></Field><Field label="관련 목차" hint="선택 항목"><select value={form.topic} onChange={e=>change('topic',e.target.value)}><option value="">관련 목차를 선택해 주세요</option>{course?.topics.map((t,i)=><option key={t} value={t}>{i}. {t}</option>)}</select></Field>{error&&<NoticeBox error>{error}<br/>입력 내용은 그대로 유지됩니다. 다시 저장해 주세요.</NoticeBox>}{success&&<NoticeBox><CheckCircle2 size={17}/>{success}<Link href="/records" className="text-link">내 기록으로 이동 ↗</Link></NoticeBox>}<div className="form-actions">{!submitted&&<button type="button" className="button secondary" disabled={busy} onClick={()=>submit(true)}>임시 저장</button>}<button className="button" disabled={busy} type="submit">{busy?'저장 중…':submitted?'질문 수정하기':'질문 남기기'}<ArrowUpRight size={17}/></button></div><p className="small muted" aria-live="polite">{busy?'저장하고 있습니다. 잠시 기다려 주세요.':demo?'브라우저 데모에서는 강사에게 전달되지 않습니다. 역할을 바꾸어 답변을 체험할 수 있어요.':'질문과 답변은 내 기록에서 다시 확인할 수 있습니다.'}</p>{demo&&<details className="demo-tools"><summary>데모 저장 실패 체험</summary><p>아래 버튼을 누르면 다음 저장이 실패합니다. 입력을 유지한 채 재시도할 수 있어요.</p><button type="button" className="text-button" onClick={()=>{failNext();setSuccess('다음 저장에서 실패 상황을 체험합니다.');}}>다음 저장 실패시키기</button></details>}</form><aside className="question-help"><span className="eyebrow">A NOTE FOR YOU</span><h2>완벽한 질문이<br/>아니어도 괜찮아요.</h2><p>지금의 상황을 알려주시면,<br/>더 구체적인 이야기를 나눌 수 있어요.</p><ol><li>가장 고민되는 한 가지부터</li><li>해본 시도와 어려웠던 점</li><li>함께 찾고 싶은 다음 방향</li></ol><div className="divider"/><MessageCircle size={26}/><p className="small">남겨주신 고민을 강사가 수업 전에 살펴봅니다.</p></aside></div></div>;
+"use client";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useRef, useState } from "react";
+import {
+  Lock,
+  ArrowUpRight,
+  Trash2,
+  RotateCcw,
+  MessageCircle,
+  CheckCircle2,
+} from "lucide-react";
+import { useData } from "./provider";
+import {
+  PageHead,
+  Field,
+  NoticeBox,
+  Restricted,
+  Empty,
+  Status,
+  ButtonLink,
+} from "./ui";
+import { enrolled, manages } from "@/lib/permissions";
+import { statusLabels, stages, type Question } from "@/lib/types";
+import { errorMessage, questionSchema } from "@/lib/validation";
+export function QuestionEditor() {
+  const { data, user, save, demo, failNext } = useData();
+  const params = useSearchParams();
+  const old = data.questions.find(
+    (q) =>
+      q.id === params.get("edit") && q.user_id === user?.id && !q.deleted_at,
+  );
+  const options = data.cohorts.filter(
+    (c) =>
+      c.status === "published" &&
+      enrolled(data, user, c.id) &&
+      data.courses.some(
+        (co) => co.id === c.course_id && co.status === "published",
+      ),
+  );
+  const selected =
+    old?.cohort_id ||
+    options.find(
+      (c) =>
+        c.id === params.get("cohort") || c.course_id === params.get("course"),
+    )?.id ||
+    options[0]?.id ||
+    "";
+  const [form, setForm] = useState({
+    id: old?.id || crypto.randomUUID(),
+    cohort_id: selected,
+    title: old?.title || "",
+    stage: old?.stage || "",
+    detail: old?.detail || "",
+    url: old?.url || "",
+    topic: old?.topic || "",
+    revision: old?.revision || 0,
+  });
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState(""),
+    [success, setSuccess] = useState(""),
+    [submitted, setSubmitted] = useState(old ? !old.draft : false);
+  const lock = useRef(false);
+  if (!user)
+    return (
+      <div className="container">
+        <Restricted
+          title="나의 고민을 안전하게 남겨주세요."
+          href={`/login?next=${encodeURIComponent(`/questions/new?${params.toString()}`)}`}
+        >
+          로그인 후 원래 선택한 수업으로 돌아옵니다.
+        </Restricted>
+      </div>
+    );
+  if (params.get("edit") && !old)
+    return (
+      <div className="container">
+        <Empty title="수정할 수 있는 질문이 없습니다." />
+      </div>
+    );
+  if (!options.length)
+    return (
+      <div className="container">
+        <Restricted href="/classes" title="수강 승인을 기다리고 있어요.">
+          수업 안내에서 원하는 수업을 선택해 수강 승인을 요청해 주세요.
+        </Restricted>
+      </div>
+    );
+  const cohort = data.cohorts.find((c) => c.id === form.cohort_id),
+    course = data.courses.find((c) => c.id === cohort?.course_id);
+  const change = (key: string, value: string) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setSuccess("");
+  };
+  async function submit(draft: boolean) {
+    if (lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    setSuccess("");
+    try {
+      const value = questionSchema.parse({ ...form, draft });
+      await save({ kind: "question", value });
+      setForm((f) => ({ ...f, revision: f.revision + 1 }));
+      setSubmitted(!draft);
+      setSuccess(
+        draft
+          ? "임시 저장했습니다. 내 기록에서 이어 쓸 수 있어요."
+          : "질문이 접수되었습니다. 강사가 확인한 답변은 내 기록에서 볼 수 있어요.",
+      );
+    } catch (e) {
+      setError(errorMessage(e) || "저장에 실패했습니다. 입력은 유지됩니다.");
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="container">
+      <PageHead eyebrow="03 / YOUR QUESTION" title="지금, 어디에서 막히나요?">
+        정리되지 않은 고민도 괜찮아요. 수업 전에 먼저 남겨주세요.
+      </PageHead>
+      <div className="question-layout">
+        <form
+          className="form-panel"
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit(false);
+          }}
+        >
+          <div className="form-intro">
+            <Lock size={16} />
+            <span>나와 담당 강사만 볼 수 있는 비공개 질문입니다.</span>
+          </div>
+          <Field label="질문할 수업 *">
+            <select
+              required
+              value={form.cohort_id}
+              disabled={!!old}
+              onChange={(e) => {
+                change("cohort_id", e.target.value);
+                change("topic", "");
+              }}
+            >
+              {options.map((c) => (
+                <option value={c.id} key={c.id}>
+                  {data.courses.find((co) => co.id === c.course_id)?.title} ·{" "}
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="가장 묻고 싶은 질문 *"
+            hint={`${form.title.length} / 200자`}
+          >
+            <textarea
+              rows={3}
+              required
+              maxLength={200}
+              placeholder="직장 생활과 병행하려고 하는데, 제작 시간을 어떻게 잡아야 꾸준히 할 수 있을까요?"
+              value={form.title}
+              onChange={(e) => change("title", e.target.value)}
+            />
+          </Field>
+          <Field label="현재 상태" hint="선택 항목">
+            <select
+              value={form.stage}
+              onChange={(e) => change("stage", e.target.value)}
+            >
+              <option value="">현재 상태를 선택해 주세요</option>
+              {stages.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="구체적인 상황과 시도한 것"
+            hint={`${form.detail.length} / 2,000자 · 선택 항목`}
+          >
+            <textarea
+              rows={6}
+              maxLength={2000}
+              value={form.detail}
+              onChange={(e) => change("detail", e.target.value)}
+              placeholder="어떤 상황인지, 지금까지 무엇을 시도했는지 자유롭게 적어주세요."
+            />
+          </Field>
+          <Field
+            label="채널 또는 영상 주소"
+            hint="선택 항목 · https://로 시작하는 주소"
+          >
+            <input
+              type="url"
+              maxLength={2000}
+              placeholder="https://youtube.com/..."
+              value={form.url}
+              onChange={(e) => change("url", e.target.value)}
+            />
+          </Field>
+          <Field label="관련 목차" hint="선택 항목">
+            <select
+              value={form.topic}
+              onChange={(e) => change("topic", e.target.value)}
+            >
+              <option value="">관련 목차를 선택해 주세요</option>
+              {course?.topics.map((t, i) => (
+                <option key={t} value={t}>
+                  {i}. {t}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {error && (
+            <NoticeBox error>
+              {error}
+              <br />
+              입력 내용은 그대로 유지됩니다. 다시 저장해 주세요.
+            </NoticeBox>
+          )}
+          {success && (
+            <NoticeBox>
+              <CheckCircle2 size={17} />
+              {success}
+              <Link href="/records" className="text-link">
+                내 기록으로 이동 ↗
+              </Link>
+            </NoticeBox>
+          )}
+          <div className="form-actions">
+            {!submitted && (
+              <button
+                type="button"
+                className="button secondary"
+                disabled={busy}
+                onClick={() => submit(true)}
+              >
+                임시 저장
+              </button>
+            )}
+            <button className="button" disabled={busy} type="submit">
+              {busy ? "저장 중…" : submitted ? "질문 수정하기" : "질문 남기기"}
+              <ArrowUpRight size={17} />
+            </button>
+          </div>
+          <p className="small muted" aria-live="polite">
+            {busy
+              ? "저장하고 있습니다. 잠시 기다려 주세요."
+              : demo
+                ? "브라우저 데모에서는 강사에게 전달되지 않습니다. 역할을 바꾸어 답변을 체험할 수 있어요."
+                : "질문과 답변은 내 기록에서 다시 확인할 수 있습니다."}
+          </p>
+          {demo && (
+            <details className="demo-tools">
+              <summary>데모 저장 실패 체험</summary>
+              <p>
+                아래 버튼을 누르면 다음 저장이 실패합니다. 입력을 유지한 채
+                재시도할 수 있어요.
+              </p>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => {
+                  failNext();
+                  setSuccess("다음 저장에서 실패 상황을 체험합니다.");
+                }}
+              >
+                다음 저장 실패시키기
+              </button>
+            </details>
+          )}
+        </form>
+        <aside className="question-help">
+          <span className="eyebrow">A NOTE FOR YOU</span>
+          <h2>
+            완벽한 질문이
+            <br />
+            아니어도 괜찮아요.
+          </h2>
+          <p>
+            지금의 상황을 알려주시면,
+            <br />더 구체적인 이야기를 나눌 수 있어요.
+          </p>
+          <ol>
+            <li>가장 고민되는 한 가지부터</li>
+            <li>해본 시도와 어려웠던 점</li>
+            <li>함께 찾고 싶은 다음 방향</li>
+          </ol>
+          <div className="divider" />
+          <MessageCircle size={26} />
+          <p className="small">남겨주신 고민을 강사가 수업 전에 살펴봅니다.</p>
+        </aside>
+      </div>
+    </div>
+  );
 }
-export function Records(){const {data,user,save}=useData();const [tab,setTab]=useState('all'),[error,setError]=useState(''),[busy,setBusy]=useState('');if(!user)return <div className="container"><Restricted href="/login?next=/records"/></div>;const own=data.questions.filter(q=>q.user_id===user.id);const questions=own.filter(q=>tab==='trash'?!!q.deleted_at:!q.deleted_at&&(tab==='all'||(tab==='draft'?q.draft:!q.draft&&q.status==='answered'))).sort((a,b)=>b.updated_at.localeCompare(a.updated_at));return <div className="container"><PageHead eyebrow="MY LEARNING JOURNAL" title="고민도, 배움의 기록이 됩니다.">내가 남긴 질문과 강사의 답변을 한곳에서 확인하세요.</PageHead><div className="toolbar"><div className="tabs">{[['all','전체'],['draft','임시 저장'],['answered','답변 완료'],['trash','휴지통']].map(([k,v])=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{v}</button>)}</div><ButtonLink href="/questions/new">새 질문</ButtonLink></div>{error&&<NoticeBox error>{error}</NoticeBox>}{questions.length?<div className="record-list">{questions.map(q=><article className="record" key={q.id}><div className="record-main"><div className="tags"><Status>{q.draft?'임시 저장':statusLabels[q.status]}</Status><span className="small muted">{data.cohorts.find(c=>c.id===q.cohort_id)?.name}</span></div><Link href={q.draft?`/questions/new?edit=${q.id}`:`/questions/${q.id}`}><h3>{q.title}</h3></Link><p className="small muted">{new Date(q.updated_at).toLocaleDateString('ko-KR')}{q.answer?' · 강사 답변이 도착했어요':''}{q.changed_after_answer?' · 답변 이후 수정됨':''}</p></div><div className="record-actions">{tab==='trash'?<button disabled={busy===q.id} className="text-button" onClick={async()=>{setBusy(q.id);try{await save({kind:'restore-question',id:q.id,revision:q.revision});}catch(e){setError(errorMessage(e)||'복구 실패');}finally{setBusy('');}}}><RotateCcw size={15}/> 복구하기</button>:<><Link href={`/questions/new?edit=${q.id}`} className="text-link">{q.draft?'이어서 작성':'수정'}</Link><button className="icon-button" disabled={busy===q.id} aria-label={`${q.title} 삭제`} onClick={async()=>{setBusy(q.id);try{await save({kind:'delete-question',id:q.id,revision:q.revision});}catch(e){setError(errorMessage(e)||'삭제 실패');}finally{setBusy('');}}}><Trash2 size={17}/></button></>}</div></article>)}</div>:<Empty title={tab==='trash'?'휴지통이 비어 있습니다.':'아직 기록이 없어요.'}>{tab==='trash'?'삭제한 질문은 이곳에서 복구할 수 있습니다.':'작은 고민 하나부터 남겨보세요.'}</Empty>}</div>;}
-export function QuestionDetail({id}:{id:string}){const {data,user}=useData();const q=data.questions.find(q=>q.id===id&&!q.deleted_at);if(!user)return <div className="container"><Restricted href={`/login?next=/questions/${id}`}/></div>;if(!q)return <div className="container"><Empty title="질문이 없거나 열람 권한이 없습니다."/></div>;return <div className="container narrow"><Link className="back-link" href="/records">← 내 기록</Link><PageHead eyebrow="PRIVATE QUESTION" title={q.title}/><div className="tags"><Status>{q.draft?'임시 저장':statusLabels[q.status]}</Status><span className="small muted">{data.cohorts.find(c=>c.id===q.cohort_id)?.name} · {q.stage||'현재 상태 미입력'}</span></div><div className="paper"><p className="prose">{q.detail||'추가 상황을 입력하지 않았습니다.'}</p>{q.topic&&<p className="small muted">관련 목차 · {q.topic}</p>}{q.url&&<a className="text-link" href={q.url} target="_blank" rel="noopener noreferrer">채널·영상 보기 ↗</a>}</div><section className="answer-box"><div className="answer-label"><MessageCircle size={18}/> 강사 답변</div>{q.answer?<><p className="prose">{q.answer}</p><p className="small muted">{q.answered_at&&new Date(q.answered_at).toLocaleDateString('ko-KR')}{q.changed_after_answer?' · 이 답변 이후 질문이 수정되었습니다.':''}</p></>:<p className="muted">아직 답변이 등록되지 않았습니다. 강사가 확인한 후 이곳에 답변을 남깁니다.</p>}</section>{q.user_id===user.id&&<ButtonLink href={`/questions/new?edit=${q.id}`} secondary>질문 수정하기</ButtonLink>}</div>;}
-export function Instructor(){const {data,user}=useData();const [course,setCourse]=useState(''),[cohort,setCohort]=useState(''),[status,setStatus]=useState('');if(!user||!['admin','instructor'].includes(user.role))return <div className="container"><Restricted title="담당 강사와 관리자만 이용할 수 있습니다."/></div>;const items=data.questions.filter(q=>!q.draft&&!q.deleted_at&&manages(data,user,q.cohort_id)&&(!status||q.status===status)&&(!cohort||q.cohort_id===cohort)&&(!course||data.cohorts.some(c=>c.id===q.cohort_id&&c.course_id===course)));return <div className="container"><PageHead eyebrow="INSTRUCTOR DESK" title="수업 전에, 먼저 듣는 이야기">담당 수업의 질문을 확인하고 학생에게 답변을 남겨주세요.</PageHead><div className="filters"><label><span className="sr-only">수업별 질문 필터</span><select value={course} onChange={e=>{setCourse(e.target.value);setCohort('');}}><option value="">모든 담당 수업</option>{data.courses.map(c=><option key={c.id} value={c.id}>{c.title}</option>)}</select></label><label><span className="sr-only">기수별 질문 필터</span><select value={cohort} onChange={e=>setCohort(e.target.value)}><option value="">모든 운영 회차</option>{data.cohorts.filter(c=>manages(data,user,c.id)&&(!course||c.course_id===course)).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label><span className="sr-only">질문 상태 필터</span><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">모든 처리 상태</option>{Object.entries(statusLabels).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label></div><p className="small muted">질문 {items.length}개 · 임시 저장 질문은 수강생 본인만 볼 수 있습니다.</p>{items.length?items.map(q=><AnswerEditor key={`${q.id}-${q.revision}`} q={q}/>):<Empty title="현재 조건에 맞는 질문이 없습니다."/>}</div>;}
-function AnswerEditor({q}:{q:Question}){const {data,save}=useData();const [answer,setAnswer]=useState(q.answer),[note,setNote]=useState(data.notes.find(n=>n.question_id===q.id)?.body||''),[status,setStatus]=useState(q.status),[busy,setBusy]=useState(false),[error,setError]=useState(''),[saved,setSaved]=useState(false);return <details className="instructor-card"><summary><div><div className="tags"><Status>{statusLabels[q.status]}</Status>{q.changed_after_answer&&<span className="badge warning">답변 이후 질문 수정됨</span>}<span className="small muted">{data.profiles.find(p=>p.id===q.user_id)?.name||'수강생'} · {data.cohorts.find(c=>c.id===q.cohort_id)?.name}</span></div><h3>{q.title}</h3></div><span>+</span></summary><div className="answer-editor"><p className="prose">{q.detail||'추가 상황 없음'}</p><p className="small muted">{q.stage} {q.topic&&` / ${q.topic}`}</p>{q.url&&<a className="text-link" href={q.url} rel="noopener noreferrer" target="_blank">채널·영상 보기 ↗</a>}<form onSubmit={async e=>{e.preventDefault();if(busy)return;setBusy(true);setError('');try{await save({kind:'answer',id:q.id,revision:q.revision,answer,status,note});setSaved(true);}catch(err){setError(errorMessage(err)||'저장 실패');}finally{setBusy(false);}}}><Field label="수강생에게 보이는 답변"><textarea rows={5} maxLength={10000} value={answer} onChange={e=>setAnswer(e.target.value)}/></Field><Field label="내부 메모 · 수강생에게 보이지 않습니다"><textarea rows={3} maxLength={10000} value={note} onChange={e=>setNote(e.target.value)}/></Field><Field label="처리 상태"><select value={status} onChange={e=>setStatus(e.target.value as Question['status'])}>{Object.entries(statusLabels).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></Field>{error&&<NoticeBox error>{error}</NoticeBox>}{saved&&<NoticeBox>답변을 저장했습니다.</NoticeBox>}<button className="button" disabled={busy}>{busy?'저장 중…':'답변 및 상태 저장'}</button></form></div></details>;}
+export function Records() {
+  const { data, user, save } = useData();
+  const [tab, setTab] = useState("all"),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState("");
+  if (!user)
+    return (
+      <div className="container">
+        <Restricted href="/login?next=/records" />
+      </div>
+    );
+  const own = data.questions.filter((q) => q.user_id === user.id);
+  const questions = own
+    .filter((q) =>
+      tab === "trash"
+        ? !!q.deleted_at
+        : !q.deleted_at &&
+          (tab === "all" ||
+            (tab === "draft" ? q.draft : !q.draft && q.status === "answered")),
+    )
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+  return (
+    <div className="container">
+      <PageHead
+        eyebrow="MY LEARNING JOURNAL"
+        title="고민도, 배움의 기록이 됩니다."
+      >
+        내가 남긴 질문과 강사의 답변을 한곳에서 확인하세요.
+      </PageHead>
+      <div className="toolbar">
+        <div className="tabs">
+          {[
+            ["all", "전체"],
+            ["draft", "임시 저장"],
+            ["answered", "답변 완료"],
+            ["trash", "휴지통"],
+          ].map(([k, v]) => (
+            <button
+              key={k}
+              className={tab === k ? "active" : ""}
+              onClick={() => setTab(k)}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        <ButtonLink href="/questions/new">새 질문</ButtonLink>
+      </div>
+      {error && <NoticeBox error>{error}</NoticeBox>}
+      {questions.length ? (
+        <div className="record-list">
+          {questions.map((q) => (
+            <article className="record" key={q.id}>
+              <div className="record-main">
+                <div className="tags">
+                  <Status>
+                    {q.draft ? "임시 저장" : statusLabels[q.status]}
+                  </Status>
+                  <span className="small muted">
+                    {data.cohorts.find((c) => c.id === q.cohort_id)?.name}
+                  </span>
+                </div>
+                <Link
+                  href={
+                    q.draft
+                      ? `/questions/new?edit=${q.id}`
+                      : `/questions/${q.id}`
+                  }
+                >
+                  <h3>{q.title}</h3>
+                </Link>
+                <p className="small muted">
+                  {new Date(q.updated_at).toLocaleDateString("ko-KR")}
+                  {q.answer ? " · 강사 답변이 도착했어요" : ""}
+                  {q.changed_after_answer ? " · 답변 이후 수정됨" : ""}
+                </p>
+              </div>
+              <div className="record-actions">
+                {tab === "trash" ? (
+                  <button
+                    disabled={busy === q.id}
+                    className="text-button"
+                    onClick={async () => {
+                      setBusy(q.id);
+                      try {
+                        await save({
+                          kind: "restore-question",
+                          id: q.id,
+                          revision: q.revision,
+                        });
+                      } catch (e) {
+                        setError(errorMessage(e) || "복구 실패");
+                      } finally {
+                        setBusy("");
+                      }
+                    }}
+                  >
+                    <RotateCcw size={15} /> 복구하기
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      href={`/questions/new?edit=${q.id}`}
+                      className="text-link"
+                    >
+                      {q.draft ? "이어서 작성" : "수정"}
+                    </Link>
+                    <button
+                      className="icon-button"
+                      disabled={busy === q.id}
+                      aria-label={`${q.title} 삭제`}
+                      onClick={async () => {
+                        setBusy(q.id);
+                        try {
+                          await save({
+                            kind: "delete-question",
+                            id: q.id,
+                            revision: q.revision,
+                          });
+                        } catch (e) {
+                          setError(errorMessage(e) || "삭제 실패");
+                        } finally {
+                          setBusy("");
+                        }
+                      }}
+                    >
+                      <Trash2 size={17} />
+                    </button>
+                  </>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <Empty
+          title={
+            tab === "trash" ? "휴지통이 비어 있습니다." : "아직 기록이 없어요."
+          }
+        >
+          {tab === "trash"
+            ? "삭제한 질문은 이곳에서 복구할 수 있습니다."
+            : "작은 고민 하나부터 남겨보세요."}
+        </Empty>
+      )}
+    </div>
+  );
+}
+export function QuestionDetail({ id }: { id: string }) {
+  const { data, user } = useData();
+  const q = data.questions.find((q) => q.id === id && !q.deleted_at);
+  if (!user)
+    return (
+      <div className="container">
+        <Restricted href={`/login?next=/questions/${id}`} />
+      </div>
+    );
+  if (!q)
+    return (
+      <div className="container">
+        <Empty title="질문이 없거나 열람 권한이 없습니다." />
+      </div>
+    );
+  return (
+    <div className="container narrow">
+      <Link className="back-link" href="/records">
+        ← 내 기록
+      </Link>
+      <PageHead eyebrow="PRIVATE QUESTION" title={q.title} />
+      <div className="tags">
+        <Status>{q.draft ? "임시 저장" : statusLabels[q.status]}</Status>
+        <span className="small muted">
+          {data.cohorts.find((c) => c.id === q.cohort_id)?.name} ·{" "}
+          {q.stage || "현재 상태 미입력"}
+        </span>
+      </div>
+      <div className="paper">
+        <p className="prose">
+          {q.detail || "추가 상황을 입력하지 않았습니다."}
+        </p>
+        {q.topic && <p className="small muted">관련 목차 · {q.topic}</p>}
+        {q.url && (
+          <a
+            className="text-link"
+            href={q.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            채널·영상 보기 ↗
+          </a>
+        )}
+      </div>
+      <section className="answer-box">
+        <div className="answer-label">
+          <MessageCircle size={18} /> 강사 답변
+        </div>
+        {q.answer ? (
+          <>
+            <p className="prose">{q.answer}</p>
+            <p className="small muted">
+              {q.answered_at &&
+                new Date(q.answered_at).toLocaleDateString("ko-KR")}
+              {q.changed_after_answer
+                ? " · 이 답변 이후 질문이 수정되었습니다."
+                : ""}
+            </p>
+          </>
+        ) : (
+          <p className="muted">
+            아직 답변이 등록되지 않았습니다. 강사가 확인한 후 이곳에 답변을
+            남깁니다.
+          </p>
+        )}
+      </section>
+      {q.user_id === user.id && (
+        <ButtonLink href={`/questions/new?edit=${q.id}`} secondary>
+          질문 수정하기
+        </ButtonLink>
+      )}
+    </div>
+  );
+}
+export function Instructor() {
+  const { data, user } = useData();
+  const [course, setCourse] = useState(""),
+    [cohort, setCohort] = useState(""),
+    [status, setStatus] = useState("");
+  if (!user || !["admin", "instructor"].includes(user.role))
+    return (
+      <div className="container">
+        <Restricted title="담당 강사와 관리자만 이용할 수 있습니다." />
+      </div>
+    );
+  const items = data.questions.filter(
+    (q) =>
+      !q.draft &&
+      !q.deleted_at &&
+      manages(data, user, q.cohort_id) &&
+      (!status || q.status === status) &&
+      (!cohort || q.cohort_id === cohort) &&
+      (!course ||
+        data.cohorts.some(
+          (c) => c.id === q.cohort_id && c.course_id === course,
+        )),
+  );
+  return (
+    <div className="container">
+      <PageHead eyebrow="INSTRUCTOR DESK" title="수업 전에, 먼저 듣는 이야기">
+        담당 수업의 질문을 확인하고 학생에게 답변을 남겨주세요.
+      </PageHead>
+      <div className="filters">
+        <label>
+          <span className="sr-only">수업별 질문 필터</span>
+          <select
+            value={course}
+            onChange={(e) => {
+              setCourse(e.target.value);
+              setCohort("");
+            }}
+          >
+            <option value="">모든 담당 수업</option>
+            {data.courses.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span className="sr-only">기수별 질문 필터</span>
+          <select value={cohort} onChange={(e) => setCohort(e.target.value)}>
+            <option value="">모든 운영 회차</option>
+            {data.cohorts
+              .filter(
+                (c) =>
+                  manages(data, user, c.id) &&
+                  (!course || c.course_id === course),
+              )
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+          </select>
+        </label>
+        <label>
+          <span className="sr-only">질문 상태 필터</span>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">모든 처리 상태</option>
+            {Object.entries(statusLabels).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="small muted">
+        질문 {items.length}개 · 임시 저장 질문은 수강생 본인만 볼 수 있습니다.
+      </p>
+      {items.length ? (
+        items.map((q) => <AnswerEditor key={q.id} q={q} />)
+      ) : (
+        <Empty title="현재 조건에 맞는 질문이 없습니다." />
+      )}
+    </div>
+  );
+}
+function AnswerEditor({ q }: { q: Question }) {
+  const { data, save } = useData();
+  const [answer, setAnswer] = useState(q.answer),
+    [note, setNote] = useState(
+      data.notes.find((n) => n.question_id === q.id)?.body || "",
+    ),
+    [status, setStatus] = useState(q.status),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState(""),
+    [saved, setSaved] = useState(false);
+  return (
+    <details className="instructor-card">
+      <summary>
+        <div>
+          <div className="tags">
+            <Status>{statusLabels[q.status]}</Status>
+            {q.changed_after_answer && (
+              <span className="badge warning">답변 이후 질문 수정됨</span>
+            )}
+            <span className="small muted">
+              {data.profiles.find((p) => p.id === q.user_id)?.name || "수강생"}{" "}
+              · {data.cohorts.find((c) => c.id === q.cohort_id)?.name}
+            </span>
+          </div>
+          <h3>{q.title}</h3>
+        </div>
+        <span>+</span>
+      </summary>
+      <div className="answer-editor">
+        <p className="prose">{q.detail || "추가 상황 없음"}</p>
+        <p className="small muted">
+          {q.stage} {q.topic && ` / ${q.topic}`}
+        </p>
+        {q.url && (
+          <a
+            className="text-link"
+            href={q.url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            채널·영상 보기 ↗
+          </a>
+        )}
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (busy) return;
+            setBusy(true);
+            setError("");
+            try {
+              await save({
+                kind: "answer",
+                id: q.id,
+                revision: q.revision,
+                answer,
+                status,
+                note,
+              });
+              setSaved(true);
+            } catch (err) {
+              setError(errorMessage(err) || "저장 실패");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <Field label="수강생에게 보이는 답변">
+            <textarea
+              rows={5}
+              maxLength={10000}
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+            />
+          </Field>
+          <Field label="내부 메모 · 수강생에게 보이지 않습니다">
+            <textarea
+              rows={3}
+              maxLength={10000}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </Field>
+          <Field label="처리 상태">
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as Question["status"])}
+            >
+              {Object.entries(statusLabels).map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {error && <NoticeBox error>{error}</NoticeBox>}
+          {saved && <NoticeBox>답변을 저장했습니다.</NoticeBox>}
+          <button className="button" disabled={busy}>
+            {busy ? "저장 중…" : "답변 및 상태 저장"}
+          </button>
+        </form>
+      </div>
+    </details>
+  );
+}

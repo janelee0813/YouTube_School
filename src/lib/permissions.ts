@@ -1,6 +1,71 @@
-import type {Snapshot,Profile,Question,Material} from './types';
-export function manages(s:Snapshot,u:Profile|null,cohortId:string){return !!u&&(u.role==='admin'||s.cohorts.some(c=>c.id===cohortId&&c.instructor_id===u.id));}
-export function enrolled(s:Snapshot,u:Profile|null,cohortId:string){return !!u&&s.enrollments.some(e=>e.user_id===u.id&&e.cohort_id===cohortId&&e.status==='active');}
-export function readsQuestion(s:Snapshot,u:Profile|null,q:Question){return !!u&&(q.user_id===u.id||(!q.draft&&manages(s,u,q.cohort_id)));}
-export function readsMaterial(s:Snapshot,u:Profile|null,m:Material){if(u?.role==='admin')return true; if(m.status!=='published'||!s.courses.some(c=>c.id===m.course_id&&c.status==='published'))return false;return m.visibility==='public'||s.cohorts.some(c=>c.course_id===m.course_id&&(enrolled(s,u,c.id)||manages(s,u,c.id)));}
-export function visibleSnapshot(s:Snapshot,u:Profile|null):Snapshot { const admin=u?.role==='admin'; const qs=s.questions.filter(q=>readsQuestion(s,u,q));return {...s,profiles:s.profiles.filter(p=>admin||p.id===u?.id||s.enrollments.some(e=>e.user_id===p.id&&manages(s,u,e.cohort_id))),courses:s.courses.filter(c=>admin||c.status==='published'),cohorts:s.cohorts.filter(c=>admin||(c.status==='published'&&s.courses.some(co=>co.id===c.course_id&&co.status==='published'))),enrollments:s.enrollments.filter(e=>e.user_id===u?.id||manages(s,u,e.cohort_id)),materials:s.materials.filter(m=>readsMaterial(s,u,m)),questions:qs,notes:s.notes.filter(n=>qs.some(q=>q.id===n.question_id&&manages(s,u,q.cohort_id))),notices:s.notices.filter(n=>admin||n.status==='published')}; }
+import type { Snapshot, Profile, Question, Material } from "./types";
+export function manages(s: Snapshot, u: Profile | null, cohortId: string) {
+  return (
+    !!u &&
+    (u.role === "admin" ||
+      s.cohorts.some((c) => c.id === cohortId && c.instructor_id === u.id))
+  );
+}
+export function enrolled(s: Snapshot, u: Profile | null, cohortId: string) {
+  return (
+    !!u &&
+    s.enrollments.some(
+      (e) =>
+        e.user_id === u.id && e.cohort_id === cohortId && e.status === "active",
+    )
+  );
+}
+export function readsQuestion(s: Snapshot, u: Profile | null, q: Question) {
+  return (
+    !!u && (q.user_id === u.id || (!q.draft && manages(s, u, q.cohort_id)))
+  );
+}
+export function readsMaterial(s: Snapshot, u: Profile | null, m: Material) {
+  if (u?.role === "admin") return true;
+  if (
+    m.status !== "published" ||
+    !s.courses.some((c) => c.id === m.course_id && c.status === "published")
+  )
+    return false;
+  return (
+    m.visibility === "public" ||
+    s.cohorts.some(
+      (c) =>
+        c.course_id === m.course_id &&
+        (enrolled(s, u, c.id) || manages(s, u, c.id)),
+    )
+  );
+}
+export function visibleSnapshot(s: Snapshot, u: Profile | null): Snapshot {
+  const admin = u?.role === "admin";
+  const qs = s.questions.filter((q) => readsQuestion(s, u, q));
+  return {
+    ...s,
+    profiles: s.profiles.filter(
+      (p) =>
+        admin ||
+        p.id === u?.id ||
+        s.enrollments.some(
+          (e) => e.user_id === p.id && manages(s, u, e.cohort_id),
+        ),
+    ),
+    courses: s.courses.filter((c) => admin || c.status === "published"),
+    cohorts: s.cohorts.filter(
+      (c) =>
+        admin ||
+        (c.status === "published" &&
+          s.courses.some(
+            (co) => co.id === c.course_id && co.status === "published",
+          )),
+    ),
+    enrollments: s.enrollments.filter(
+      (e) => e.user_id === u?.id || manages(s, u, e.cohort_id),
+    ),
+    materials: s.materials.filter((m) => readsMaterial(s, u, m)),
+    questions: qs,
+    notes: s.notes.filter((n) =>
+      qs.some((q) => q.id === n.question_id && manages(s, u, q.cohort_id)),
+    ),
+    notices: s.notices.filter((n) => admin || n.status === "published"),
+  };
+}
