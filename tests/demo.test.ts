@@ -194,22 +194,27 @@ test("draft material and courses hidden from student and guest", () => {
   s.materials.push(material({ status: "draft" }));
   s.courses[0].status = "draft";
   assert.equal(visibleSnapshot(s, student()).materials.length, 0);
-  assert.equal(visibleSnapshot(s, null).courses.length, 0);
+  for (const user of [null, student()]) {
+    const visible = visibleSnapshot(s, user).courses;
+    assert.equal(visible.some((c) => c.id === ids.course), false);
+    assert.equal(visible.some((c) => c.id === ids.secondCourse), true);
+  }
 });
-test("admin can publish a second course and material without code edits", () => {
+test("admin can publish an additional course and material without code edits", () => {
   const s = seed(),
     course = {
       ...s.courses[0],
       id: crypto.randomUUID(),
-      title: "#2. 두 번째 테스트 수업",
-      order: 2,
+      title: "추가 테스트 수업",
+      order: s.courses.length + 1,
     };
   let next = mutateDemo(s, admin(), { kind: "course", value: course });
   next = mutateDemo(next, admin(), {
     kind: "material",
     value: material({ course_id: course.id, visibility: "public" }),
   });
-  assert.equal(visibleSnapshot(next, null).courses.length, 2);
+  assert.equal(visibleSnapshot(next, null).courses.length, s.courses.length + 1);
+  assert.equal(visibleSnapshot(next, null).courses.some((c) => c.id === course.id), true);
   assert.equal(visibleSnapshot(next, null).materials.length, 1);
 });
 test("student cannot publish content or approve their own membership", () => {
@@ -289,5 +294,28 @@ test("existing demo outline gains the preface once while preserving records", ()
 test("outline upgrade preserves administrator-edited topics", () => {
   const s = seed();
   s.courses[0].topics = ["직접 작성한 수업 목차"];
+  assert.deepEqual(loadDemo({ getItem: () => JSON.stringify(s) }), s);
+});
+
+test("existing browsers receive class two once without losing saved content", () => {
+  const { s } = submitted();
+  s.courses = s.courses.filter((c) => c.id !== ids.secondCourse);
+  s.courses[0].summary = "관리자가 수정한 소개";
+  const upgraded = loadDemo({ getItem: () => JSON.stringify(s) });
+  assert.deepEqual(upgraded.courses[0], s.courses[0]);
+  assert.deepEqual(upgraded.questions, s.questions);
+  assert.deepEqual(upgraded.enrollments, s.enrollments);
+  const second = upgraded.courses.find((c) => c.id === ids.secondCourse)!;
+  assert.equal(second.status, "published");
+  assert.equal(second.topics.length, 6);
+  const reloaded = loadDemo({ getItem: () => JSON.stringify(upgraded) });
+  assert.deepEqual(reloaded, upgraded);
+});
+
+test("class two upgrade preserves administrator edits and publication status", () => {
+  const s = seed();
+  const second = s.courses.find((c) => c.id === ids.secondCourse)!;
+  second.title = "관리자가 수정한 두 번째 수업";
+  second.status = "private";
   assert.deepEqual(loadDemo({ getItem: () => JSON.stringify(s) }), s);
 });

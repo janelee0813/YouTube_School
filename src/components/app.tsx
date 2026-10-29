@@ -269,7 +269,7 @@ function ClassDetail({ id }: { id: string }) {
       <Link className="back-link" href="/">
         ← 수업 안내
       </Link>
-      <PageHead eyebrow="CLASS / CONTENT PLANNING" title={c.title}>
+      <PageHead eyebrow="CLASS / OVERVIEW" title={c.title}>
         {c.summary}
       </PageHead>
       {c.status !== "published" && (
@@ -295,7 +295,9 @@ function ClassDetail({ id }: { id: string }) {
                 <details key={i}>
                   <summary>
                     <span className="topic-num">
-                      {String(i).padStart(2, "0")}
+                      {String(
+                        c.topics[0]?.startsWith("Preface") ? i : i + 1,
+                      ).padStart(2, "0")}
                     </span>
                     <span>{t}</span>
                     <span className="plus">+</span>

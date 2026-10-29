@@ -166,6 +166,10 @@ export function loadDemo(
   const raw = storage.getItem(DEMO_KEY);
   if (!raw) return seed();
   const snapshot: Snapshot = JSON.parse(raw);
+  // Add the new class to existing browsers without replacing administrator edits.
+  if (!snapshot.courses.some((c) => c.id === ids.secondCourse)) {
+    snapshot.courses.push(seed().courses.find((c) => c.id === ids.secondCourse)!);
+  }
   const course = snapshot.courses.find((c) => c.id === ids.course);
   const previousTopics = topics.slice(1);
   // Upgrade the untouched initial outline without replacing saved user content.
