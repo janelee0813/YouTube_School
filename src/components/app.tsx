@@ -300,10 +300,7 @@ function ClassDetail({ id }: { id: string }) {
                     <span>{t}</span>
                     <span className="plus">+</span>
                   </summary>
-                  <p>
-                    이 주제의 세부 내용은 수업에서 함께 다룹니다. 미리 궁금한
-                    점을 남겨주세요.
-                  </p>
+                  <p>이 주제의 세부 내용은 수업에서 함께 다룹니다.</p>
                 </details>
               ))}
             </div>

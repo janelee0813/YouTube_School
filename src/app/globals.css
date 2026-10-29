@@ -323,7 +323,7 @@ nav > .nav-login {
 }
 .button {
   border-radius: 100px;
-  background: var(--neon-gradient);
+  background: var(--header-gradient) padding-box no-repeat;
   color: var(--bg);
   padding: 13px 23px;
   display: inline-flex;
@@ -339,7 +339,7 @@ nav > .nav-login {
     transform 0.2s;
 }
 .button:hover {
-  background: var(--neon-gradient);
+  background: var(--header-gradient) padding-box no-repeat;
   box-shadow: 0 0 24px rgba(181, 102, 255, 0.28);
   transform: translateY(-1px);
 }
