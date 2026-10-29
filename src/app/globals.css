@@ -209,10 +209,6 @@ small {
   border: 1px solid #75608d;
   border-radius: 11px;
   color: var(--accent);
-  transform: rotate(-6deg);
-}
-.brand-mark svg {
-  transform: rotate(6deg);
 }
 nav {
   display: flex;

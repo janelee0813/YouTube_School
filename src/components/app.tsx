@@ -93,7 +93,7 @@ function Shell() {
           </span>
           <span>
             {data.settings.brand}
-            <small>나답게 시작하는 유튜브</small>
+            <small>유튜브 도전을 위한 교육 품앗이.</small>
           </span>
         </Link>
         <button
