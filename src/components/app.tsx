@@ -213,7 +213,7 @@ function Classes() {
   const { data } = useData();
   return (
     <div className="container">
-      <PageHead eyebrow="01 / OUR CLASS" title="나만의 방향을 찾는 시간">
+      <PageHead eyebrow="YOUTUBE CLASS" title="나만의 방향을 찾는 시간">
         알고 있는 내용을 함께 공유하고, 같이 성장해 보아요.
       </PageHead>
       <div className="class-list">
