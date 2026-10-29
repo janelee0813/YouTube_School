@@ -214,7 +214,7 @@ function Classes() {
   return (
     <div className="container">
       <PageHead eyebrow="01 / OUR CLASS" title="나만의 방향을 찾는 시간">
-        수업을 살펴보고, 다음 시작을 준비해 보세요.
+        알고 있는 내용을 함께 공유하고, 같이 성장해 보아요.
       </PageHead>
       <div className="class-list">
         {data.courses
