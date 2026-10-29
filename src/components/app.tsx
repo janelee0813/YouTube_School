@@ -204,7 +204,14 @@ function Shell() {
               {data.settings.contact_label || "문의하기"} ↗
             </a>
           ) : (
-            <a className="muted" href="tel:01051667412">010-5166-7412</a>
+            <a
+              className="text-link"
+              href="https://www.instagram.com/jane__moment/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              @jane__moment ↗
+            </a>
           )}
         </div>
       </footer>
