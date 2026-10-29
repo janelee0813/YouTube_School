@@ -99,8 +99,10 @@ function Shell() {
           className={menu ? "open" : ""}
           onClick={() => setMenu(false)}
         >
+          <a href="https://www.daangn.com/kr/group/ihx78drbjvyp/">
+            유튜브 품앗이 모임
+          </a>
           {[
-            ["/", "수업 안내"],
             ["/resources", "교육 자료"],
             ["/questions/new", "질문·고민"],
           ].map(([href, label]) => (
