@@ -3,6 +3,7 @@ export type Publish = "draft" | "published" | "private";
 export type Profile = { id: string; name: string; email: string; role: Role };
 export type Course = {
   id: string;
+  schedule_label?: string;
   title: string;
   summary: string;
   body: string;

@@ -272,6 +272,14 @@ function CourseEditor({ id }: { id: string }) {
           onChange={(e) => change("summary", e.target.value)}
         />
       </Field>
+      <Field label="목록에 표시할 일정">
+        <input
+          maxLength={100}
+          value={form.schedule_label || ""}
+          onChange={(e) => change("schedule_label", e.target.value)}
+          placeholder="예: 11/1(토) am11:00 · 비워두면 미정"
+        />
+      </Field>
       <Field label="수업 소개 본문">
         <textarea
           rows={6}

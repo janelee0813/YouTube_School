@@ -482,6 +482,12 @@ nav > .nav-login {
 .course-info {
   flex: 1;
 }
+.course-schedule {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
 .course-info h3,
 .course-info h2 {
   font-size: 25px;

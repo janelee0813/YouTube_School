@@ -49,6 +49,7 @@ export function seed(): Snapshot {
     courses: [
       {
         id: ids.course,
+        schedule_label: "11/1(토) am11:00",
         title: "#1. 유튜브 콘텐츠 기획에 앞서 갖출 내용",
         summary:
           "채널의 첫 방향을 정하기 전, 나에게 맞는 시작을 준비하는 수업입니다.",
@@ -61,6 +62,7 @@ export function seed(): Snapshot {
       },
       {
         id: ids.secondCourse,
+        schedule_label: "미정",
         title: "#2. 조회수를 넘어, 수익으로 이어지는 유튜브 설계",
         summary:
           "유튜브의 수익 구조부터 글로벌 시청자와의 만남, 비즈니스 연결까지 함께 살펴보는 수업입니다.",

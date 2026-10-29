@@ -231,7 +231,12 @@ function Classes() {
                 <span>CLASS</span>
               </div>
               <div className="course-info">
-                <Status>{c.topics.length}개의 주제</Status>
+                <div className="tags">
+                  <Status>{c.topics.length}개의 주제</Status>
+                  <span className="course-schedule" aria-label={`수업 일정: ${c.schedule_label || "미정"}`}>
+                    {c.schedule_label || "미정"}
+                  </span>
+                </div>
                 <h2>{c.title}</h2>
                 <p>{c.summary}</p>
               </div>

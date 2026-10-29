@@ -35,6 +35,7 @@ export const questionSchema = z.object({
 });
 export const courseSchema = z.object({
   id,
+  schedule_label: text(100).optional(),
   title: text(200).trim().min(1),
   summary: text(600),
   body: text(30000),

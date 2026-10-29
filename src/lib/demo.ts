@@ -166,6 +166,12 @@ export function loadDemo(
   const raw = storage.getItem(DEMO_KEY);
   if (!raw) return seed();
   const snapshot: Snapshot = JSON.parse(raw);
+  for (const initial of seed().courses) {
+    const saved = snapshot.courses.find((c) => c.id === initial.id);
+    if (saved && saved.schedule_label === undefined) {
+      saved.schedule_label = initial.schedule_label;
+    }
+  }
   // Add the new class to existing browsers without replacing administrator edits.
   if (!snapshot.courses.some((c) => c.id === ids.secondCourse)) {
     snapshot.courses.push(seed().courses.find((c) => c.id === ids.secondCourse)!);
