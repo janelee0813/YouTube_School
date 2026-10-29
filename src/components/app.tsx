@@ -227,14 +227,14 @@ function Home() {
             <span className="live-dot" /> A SMALL START, YOUR OWN CHANNEL
           </div>
           <h1>
-            나답게 시작하고,
+            제대로 알아야,
             <br />
-            <span>꾸준히 만드는 유튜브.</span>
+            <span>지속할 수 있습니다.</span>
           </h1>
           <p className="hero-copy">
-            막연했던 생각을 콘텐츠로.
+            막연한 시작보단, 함께 배워서 빨리 성장하고
             <br />
-            수업을 준비하고, 고민을 나누고, 내 채널의 방향을 찾아보세요.
+            실제적인 고민을 나눠서 채널의 방향을 찾아보아요.
           </p>
           <div className="actions">
             <ButtonLink href="/classes">수업 보기</ButtonLink>
