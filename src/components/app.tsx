@@ -38,7 +38,7 @@ export default function App() {
   );
 }
 function Shell() {
-  const { data, user, demo, ready, error, refresh, logout } = useData();
+  const { data, user, ready, error, refresh, logout } = useData();
   const path = usePathname();
   const router = useRouter();
   const [menu, setMenu] = useState(false);
@@ -72,14 +72,6 @@ function Shell() {
       <a className="skip-link" href="#main">
         본문으로 건너뛰기
       </a>
-      {demo && (
-        <div className="demo-banner">
-          <span className="live-dot" />
-          브라우저 데모 · 실제 인증·서버 저장 없음
-          <span className="desktop-inline"> · 이 브라우저에만 저장됩니다.</span>
-          <Link href="/login">역할 체험 ↗</Link>
-        </div>
-      )}
       <header className="site-header">
         <Link
           href="/"
@@ -212,11 +204,6 @@ function Shell() {
           ) : (
             <span className="muted">문의 정보 준비 중</span>
           )}
-          <p className="small">
-            {demo
-              ? "DEMO · 이 브라우저에서만 체험할 수 있습니다."
-              : "질문과 답변은 본인과 담당 강사만 열람합니다."}
-          </p>
         </div>
       </footer>
     </>

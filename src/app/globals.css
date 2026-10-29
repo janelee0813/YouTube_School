@@ -18,6 +18,11 @@
     var(--neon-pink),
     var(--neon-blue)
   );
+  --header-gradient: linear-gradient(
+    100deg,
+    var(--neon-purple) 0%,
+    var(--neon-pink) 100%
+  );
   --card-gradient: linear-gradient(
     rgba(28, 21, 48, 0.85),
     rgba(21, 16, 31, 0.7)
@@ -155,23 +160,6 @@ small {
 .skip-link:focus {
   top: 10px;
 }
-.demo-banner {
-  min-height: 35px;
-  padding: 6px 30px;
-  background: rgba(94, 200, 255, 0.06);
-  color: var(--neon-blue);
-  font-size: 11px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--line);
-}
-.demo-banner a {
-  margin-left: 16px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .live-dot {
   width: 6px;
   height: 6px;
@@ -222,7 +210,8 @@ small {
   height: 37px;
   border: 1px solid transparent;
   border-radius: 11px;
-  background: var(--neon-gradient);
+  background: var(--header-gradient);
+  background-clip: padding-box;
   color: var(--bg);
 }
 nav {
@@ -247,11 +236,12 @@ nav > a:focus-visible {
   border-color: rgba(181, 102, 255, 0.5);
   color: var(--neon-purple);
 }
-/* The reference uses the same three-color fill for the selected page. */
+/* Keep header fills smoothly purple-to-pink, without a cyan edge. */
 nav > a.active,
 nav > a.active:hover,
 nav > a.active:focus-visible {
-  background: var(--neon-gradient);
+  background: var(--header-gradient);
+  background-clip: padding-box;
   border-color: transparent;
   color: var(--bg);
   font-weight: 600;
@@ -1638,18 +1628,6 @@ th {
   }
   .container {
     width: calc(100% - 40px);
-  }
-  .demo-banner {
-    padding: 7px 16px;
-    font-size: 10px;
-    justify-content: space-between;
-    gap: 5px;
-  }
-  .demo-banner .desktop-inline {
-    display: none;
-  }
-  .demo-banner a {
-    margin-left: auto;
   }
   .site-header {
     padding: 18px 20px;
