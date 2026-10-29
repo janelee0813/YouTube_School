@@ -123,6 +123,16 @@ function Shell() {
                   : ""
               }
               key={href}
+              data-menu={href === "/questions/new" ? "questions" : undefined}
+              aria-current={
+                (
+                  href === "/"
+                    ? path === "/" || path.startsWith("/classes")
+                    : path.startsWith(href.split("/").slice(0, 2).join("/"))
+                )
+                  ? "page"
+                  : undefined
+              }
               href={href}
             >
               {label}

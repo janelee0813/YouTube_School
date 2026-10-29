@@ -1,13 +1,27 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 :root {
-  --bg: #0b0b0f;
-  --surface: #141419;
-  --surface2: #1b1b23;
-  --line: #292931;
-  --text: #f5f3f9;
-  --muted: #a5a3b0;
-  --accent: #c4afff;
-  --accentDark: #211b30;
+  /* Palette sampled from slowsixon.com: background, text, cards, active menu. */
+  --bg: #0a0612;
+  --surface: #15101f;
+  --surface2: #1c1530;
+  --line: rgba(140, 110, 200, 0.22);
+  --text: #f5f1ff;
+  --muted: #9b94b3;
+  --neon-purple: #b566ff;
+  --neon-pink: #ff5fb0;
+  --neon-blue: #5ec8ff;
+  --accent: var(--neon-purple);
+  --accentDark: rgba(181, 102, 255, 0.1);
+  --neon-gradient: linear-gradient(
+    to right,
+    var(--neon-purple),
+    var(--neon-pink),
+    var(--neon-blue)
+  );
+  --card-gradient: linear-gradient(
+    rgba(28, 21, 48, 0.85),
+    rgba(21, 16, 31, 0.7)
+  );
   --font: "Noto Sans KR", Arial, sans-serif;
   --display: "Space Grotesk", var(--font);
 }
@@ -144,14 +158,14 @@ small {
 .demo-banner {
   min-height: 35px;
   padding: 6px 30px;
-  background: #211a31;
-  color: #d8c9ff;
+  background: rgba(94, 200, 255, 0.06);
+  color: var(--neon-blue);
   font-size: 11px;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #352a49;
+  border-bottom: 1px solid var(--line);
 }
 .demo-banner a {
   margin-left: 16px;
@@ -164,7 +178,7 @@ small {
   border-radius: 50%;
   background: var(--accent);
   display: inline-block;
-  box-shadow: 0 0 14px #bba0ff55;
+  box-shadow: 0 0 14px rgba(94, 200, 255, 0.4);
   flex-shrink: 0;
 }
 .site-header {
@@ -174,7 +188,7 @@ small {
   justify-content: space-between;
   padding: 22px 40px;
   gap: 20px;
-  border-bottom: 1px solid #ffffff0c;
+  border-bottom: 1px solid var(--line);
   max-width: 1600px;
   margin: auto;
   background: var(--bg);
@@ -206,9 +220,10 @@ small {
   place-items: center;
   width: 33px;
   height: 37px;
-  border: 1px solid #75608d;
+  border: 1px solid transparent;
   border-radius: 11px;
-  color: var(--accent);
+  background: var(--neon-gradient);
+  color: var(--bg);
 }
 nav {
   display: flex;
@@ -223,14 +238,32 @@ nav > button {
   font-size: 12px;
   white-space: nowrap;
   background: transparent;
-  color: #cbc8d4;
+  color: var(--muted);
   transition: 0.2s;
 }
 nav > a:hover,
-nav > a.active {
-  background: #22202b;
-  border-color: #75608d;
-  color: #fff;
+nav > a:focus-visible {
+  background: transparent;
+  border-color: rgba(181, 102, 255, 0.5);
+  color: var(--neon-purple);
+}
+/* The reference uses the same three-color fill for the selected page. */
+nav > a.active,
+nav > a.active:hover,
+nav > a.active:focus-visible {
+  background: var(--neon-gradient);
+  border-color: transparent;
+  color: var(--bg);
+  font-weight: 600;
+}
+/* Reference's pink outlined callout, adapted to the question menu. */
+nav > a[data-menu="questions"]:not(.active) {
+  border-color: rgba(255, 95, 176, 0.8);
+  box-shadow: 0 0 12px 3px rgba(255, 95, 176, 0.35);
+}
+nav > a[data-menu="questions"]:not(.active):is(:hover, :focus-visible) {
+  color: var(--neon-pink);
+  box-shadow: 0 0 12px 3px rgba(255, 95, 176, 0.6);
 }
 nav > .nav-login {
   border-color: transparent;
@@ -298,8 +331,8 @@ nav > .nav-login {
 }
 .button {
   border-radius: 100px;
-  background: var(--accent);
-  color: #191320;
+  background: var(--neon-gradient);
+  color: var(--bg);
   padding: 13px 23px;
   display: inline-flex;
   align-items: center;
@@ -314,17 +347,18 @@ nav > .nav-login {
     transform 0.2s;
 }
 .button:hover {
-  background: #d4c3ff;
+  background: var(--neon-gradient);
+  box-shadow: 0 0 24px rgba(181, 102, 255, 0.28);
   transform: translateY(-1px);
 }
 .button.secondary {
-  color: #ece7f5;
+  color: var(--text);
   background: transparent;
-  border-color: #46404e;
+  border-color: var(--line);
 }
 .button.secondary:hover {
-  background: #23202b;
-  border-color: #8d7d9f;
+  background: rgba(181, 102, 255, 0.1);
+  border-color: rgba(181, 102, 255, 0.5);
 }
 .hero-bottom {
   margin-top: 83px;
@@ -425,30 +459,31 @@ nav > .nav-login {
   align-items: center;
   gap: 34px;
   padding: 38px 37px;
-  background: linear-gradient(115deg, #17151e, #121216);
+  position: relative;
+  background: var(--card-gradient);
   border: 1px solid var(--line);
   border-radius: 20px;
   transition: 0.2s;
 }
 .featured-course:hover {
-  border-color: #71617e;
-  background: #1c1823;
+  border-color: rgba(181, 102, 255, 0.6);
+  box-shadow: 0 10px 40px -15px rgba(181, 102, 255, 0.5);
 }
 .course-number {
   font-family: var(--display);
   font-size: 75px;
   line-height: 1;
-  color: #bba6dc;
+  color: var(--neon-blue);
   letter-spacing: -6px;
   min-width: 111px;
   padding-right: 35px;
-  border-right: 1px solid #3e354a;
+  border-right: 1px solid var(--line);
 }
 .course-number span {
   display: block;
   letter-spacing: 3px;
   font-size: 10px;
-  color: #837490;
+  color: var(--muted);
   margin-top: 15px;
   padding-left: 6px;
 }
@@ -472,8 +507,8 @@ nav > .nav-login {
   flex-wrap: wrap;
 }
 .badge {
-  background: #2b233d;
-  color: #d1bdfc;
+  background: rgba(255, 95, 176, 0.08);
+  color: var(--neon-pink);
   font-size: 10px;
   border-radius: 40px;
   padding: 3px 10px;
@@ -495,7 +530,7 @@ nav > .nav-login {
   place-items: center;
   min-width: 45px;
   height: 45px;
-  border: 1px solid #4d405e;
+  border: 1px solid rgba(94, 200, 255, 0.4);
   border-radius: 100%;
   color: var(--accent);
 }
@@ -540,7 +575,7 @@ nav > .nav-login {
   letter-spacing: -0.6px;
 }
 .privacy-note {
-  color: #9992a5;
+  color: var(--muted);
   font-size: 11px;
   display: flex;
   align-items: center;
@@ -561,7 +596,7 @@ nav > .nav-login {
   position: relative;
 }
 .plan-card > svg {
-  color: #b7a0d9;
+  color: var(--neon-blue);
   display: block;
   margin: 15px 0 25px;
 }
@@ -638,7 +673,7 @@ nav > .nav-login {
 }
 .footer p {
   font-size: 12px;
-  color: #9891a3;
+  color: var(--muted);
   line-height: 1.9;
 }
 .footer > div:last-child {
@@ -724,7 +759,7 @@ nav > .nav-login {
   display: none;
 }
 .topic-num {
-  color: #9677bd;
+  color: var(--neon-purple);
   font-family: var(--display);
   font-size: 12px;
 }
@@ -811,7 +846,7 @@ nav > .nav-login {
 input,
 select,
 textarea {
-  background: #101015;
+  background: var(--bg);
   border: 1px solid #36313f;
   color: var(--text);
   border-radius: 9px;
@@ -831,7 +866,7 @@ select {
   color: #c9c2d2;
 }
 select option {
-  background: #1b1820;
+  background: var(--surface2);
 }
 textarea {
   resize: vertical;
@@ -859,14 +894,14 @@ input[type="file"]::file-selector-button {
   margin-bottom: 16px;
 }
 .resource-card:hover {
-  border-color: #75608d;
-  background: #1a1720;
+  border-color: rgba(181, 102, 255, 0.5);
+  background: var(--surface2);
 }
 .resource-top {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #bba3db;
+  color: var(--neon-blue);
   margin-bottom: 27px;
 }
 .resource-top svg:last-child {
@@ -891,7 +926,7 @@ input[type="file"]::file-selector-button {
   display: flex;
   gap: 5px;
   align-items: center;
-  color: #a39aac;
+  color: var(--muted);
   font-size: 10px;
 }
 .resource-meta span {
@@ -903,7 +938,7 @@ input[type="file"]::file-selector-button {
   justify-content: center;
   gap: 12px;
   padding: 30px 0;
-  color: #a29aae;
+  color: var(--muted);
 }
 .resource-note p {
   font-size: 11px;
@@ -1006,7 +1041,7 @@ input[type="file"]::file-selector-button {
 .question-help ol {
   padding-left: 20px;
   font-size: 12px;
-  color: #b7adca;
+  color: var(--neon-blue);
   line-height: 2.9;
   margin-top: 30px;
 }
@@ -1016,13 +1051,13 @@ input[type="file"]::file-selector-button {
   margin: 33px 0;
 }
 .question-help > svg {
-  color: #a58bc3;
+  color: var(--neon-pink);
   margin-bottom: 15px;
 }
 .notice-box {
-  background: #211a2e;
-  border: 1px solid #453655;
-  color: #d6c5ec;
+  background: var(--surface2);
+  border: 1px solid rgba(94, 200, 255, 0.3);
+  color: var(--neon-blue);
   border-radius: 10px;
   padding: 15px 18px;
   font-size: 12px;
@@ -1072,8 +1107,8 @@ input[type="file"]::file-selector-button {
   border-radius: 13px;
 }
 .answer-box {
-  background: #1b1724;
-  border: 1px solid #40324f;
+  background: var(--surface2);
+  border: 1px solid rgba(94, 200, 255, 0.3);
   border-radius: 14px;
   padding: 30px;
   margin: 25px 0;
@@ -1110,9 +1145,9 @@ input[type="file"]::file-selector-button {
   padding: 9px 18px;
 }
 .tabs button.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #1a1324;
+  background: var(--neon-gradient);
+  border-color: transparent;
+  color: var(--bg);
 }
 .record {
   display: flex;
@@ -1121,7 +1156,7 @@ input[type="file"]::file-selector-button {
   align-items: center;
   padding: 26px 25px;
   border-bottom: 1px solid var(--line);
-  background: #131217;
+  background: var(--surface);
 }
 .record:first-child {
   border-radius: 15px 15px 0 0;
@@ -1207,7 +1242,7 @@ input[type="file"]::file-selector-button {
 }
 .role-card:hover {
   border-color: var(--accent);
-  background: #211a2e;
+  background: var(--surface2);
 }
 .role-card svg:first-child {
   color: var(--accent);
@@ -1292,7 +1327,7 @@ input[type="file"]::file-selector-button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: #15131b;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 17px 15px;
@@ -1305,8 +1340,8 @@ input[type="file"]::file-selector-button {
   overflow-wrap: anywhere;
 }
 .admin-item.active {
-  border-color: #9a7eb8;
-  background: #261e32;
+  border-color: var(--neon-purple);
+  background: rgba(181, 102, 255, 0.1);
 }
 .editor-heading {
   display: flex;
@@ -1326,7 +1361,7 @@ input[type="file"]::file-selector-button {
   gap: 18px;
 }
 .preview-panel {
-  background: #0e0d12;
+  background: var(--bg);
   border: 1px dashed #685178;
   border-radius: 12px;
   padding: 25px;
@@ -2052,4 +2087,27 @@ th {
     transition: none !important;
     animation: none !important;
   }
+}
+
+.featured-course::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(181, 102, 255, 0.7),
+    rgba(255, 95, 176, 0.4),
+    rgba(94, 200, 255, 0.6)
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+.round-arrow,
+.resource-top,
+.page-head > .eyebrow {
+  color: var(--neon-blue);
 }
