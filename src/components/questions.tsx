@@ -81,7 +81,7 @@ export function QuestionEditor() {
   if (!options.length)
     return (
       <div className="container">
-        <Restricted href="/classes" title="수강 승인을 기다리고 있어요.">
+        <Restricted href="/" title="수강 승인을 기다리고 있어요.">
           수업 안내에서 원하는 수업을 선택해 수강 승인을 요청해 주세요.
         </Restricted>
       </div>

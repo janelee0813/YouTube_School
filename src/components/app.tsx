@@ -5,7 +5,6 @@ import {
   Menu,
   X,
   Play,
-  ArrowDown,
   ArrowUpRight,
   Lock,
   FileText,
@@ -14,7 +13,6 @@ import {
 import { useState } from "react";
 import { Provider, useData } from "./provider";
 import {
-  SectionTitle,
   PageHead,
   ButtonLink,
   Empty,
@@ -22,7 +20,7 @@ import {
   NoticeBox,
   Restricted,
 } from "./ui";
-import { enrolled, manages } from "@/lib/permissions";
+import { enrolled } from "@/lib/permissions";
 import { typeLabels } from "@/lib/types";
 import {
   QuestionEditor,
@@ -46,7 +44,7 @@ function Shell() {
   const [menu, setMenu] = useState(false);
   const parts = path.split("/").filter(Boolean);
   let page: React.ReactNode;
-  if (parts.length === 0) page = <Home />;
+  if (parts.length === 0) page = <Classes />;
   else if (parts[0] === "classes")
     page = parts[1] ? <ClassDetail id={parts[1]} /> : <Classes />;
   else if (parts[0] === "resources")
@@ -110,13 +108,17 @@ function Shell() {
           onClick={() => setMenu(false)}
         >
           {[
-            ["/classes", "수업 안내"],
+            ["/", "수업 안내"],
             ["/resources", "교육 자료"],
             ["/questions/new", "질문·고민"],
           ].map(([href, label]) => (
             <Link
               className={
-                path.startsWith(href.split("/").slice(0, 2).join("/"))
+                (
+                  href === "/"
+                    ? path === "/" || path.startsWith("/classes")
+                    : path.startsWith(href.split("/").slice(0, 2).join("/"))
+                )
                   ? "active"
                   : ""
               }
@@ -210,211 +212,6 @@ function Shell() {
     </>
   );
 }
-function Home() {
-  const { data } = useData();
-  const course = data.courses
-    .filter((c) => c.status === "published")
-    .sort((a, b) => a.order - b.order)[0];
-  const materials = data.materials
-    .filter((m) => m.status === "published")
-    .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
-    .slice(0, 3);
-  return (
-    <>
-      <section className="hero">
-        <div className="container hero-inner">
-          <div className="eyebrow">
-            <span className="live-dot" /> A SMALL START, YOUR OWN CHANNEL
-          </div>
-          <h1>
-            제대로 알아야,
-            <br />
-            <span>지속할 수 있습니다.</span>
-          </h1>
-          <p className="hero-copy">
-            막연한 시작보단, 함께 배워서 빨리 성장하고
-            <br />
-            실제적인 고민을 나눠서 채널의 방향을 찾아보아요.
-          </p>
-          <div className="actions">
-            <ButtonLink href="/classes">수업 보기</ButtonLink>
-            <ButtonLink href="/questions/new" secondary>
-              수업 전 고민 남기기
-            </ButtonLink>
-          </div>
-          <div className="hero-sign">
-            <span className="orbit">
-              <Play fill="currentColor" size={26} />
-            </span>
-            <span>
-              YOUR VOICE.
-              <br />
-              YOUR PACE.
-            </span>
-          </div>
-          <div className="hero-bottom">
-            <span>LEARN. MAKE. KEEP GOING.</span>
-            <a href="#classes">
-              첫 시작을 함께 준비해요 <ArrowDown size={14} />
-            </a>
-          </div>
-        </div>
-      </section>
-      <div className="container">
-        <section className="section" id="classes">
-          <SectionTitle
-            index="01"
-            eyebrow="OUR CLASS"
-            title="시작을 단단하게 만드는 수업"
-            description="기술보다 먼저, 내 채널의 방향부터 생각해야 합니다."
-            action={
-              <Link className="text-link" href="/classes">
-                모든 수업 <ArrowUpRight size={16} />
-              </Link>
-            }
-          />
-          {course ? (
-            <Link href={`/classes/${course.id}`} className="featured-course">
-              <div className="course-number">
-                01<span>CLASS</span>
-              </div>
-              <div className="course-info">
-                <div className="tags">
-                  <Status>첫 수업</Status>
-                  <span className="muted">{course.topics.length}개의 주제</span>
-                </div>
-                <h3>{course.title.replace(/^#\d+\.\s*/, "")}</h3>
-                <p>{course.summary}</p>
-                <span className="small muted">
-                  일정은 수업 상세에서 확인해 주세요.
-                </span>
-              </div>
-              <span className="round-arrow">
-                <ArrowUpRight />
-              </span>
-            </Link>
-          ) : (
-            <Empty title="첫 수업을 준비하고 있습니다.">
-              수업이 게시되면 이곳에서 확인할 수 있어요.
-            </Empty>
-          )}
-        </section>
-        <section className="section">
-          <div className="question-callout">
-            <div>
-              <span className="eyebrow">02 / BEFORE WE MEET</span>
-              <h2>
-                좋은 수업은,
-                <br />
-                <span className="lavender">당신의 고민에서 시작해요.</span>
-              </h2>
-              <p>
-                어디서부터 시작할지, 무엇이 잘 안되는지.
-                <br />
-                정리되지 않은 생각도 편하게 남겨주세요.
-              </p>
-              <ButtonLink href="/questions/new">지금, 고민 남기기</ButtonLink>
-            </div>
-            <div className="callout-side">
-              <span className="quote-mark">“</span>
-              <p>
-                하고 싶은 이야기는 많은데,
-                <br />
-                어떤 영상부터 만들어야 할까요?
-              </p>
-              <div className="privacy-note">
-                <Lock size={14} />
-                나와 담당 강사만 보는 비공개 질문
-              </div>
-              <span className="small muted">질문 작성 예시</span>
-            </div>
-          </div>
-        </section>
-        <section className="section">
-          <SectionTitle
-            index="03"
-            eyebrow="KEEP LEARNING"
-            title="배운 것을, 나의 것으로"
-            description="수업이 끝난 뒤에도 다시 꺼내볼 수 있는 자료실입니다."
-            action={
-              <Link className="text-link" href="/resources">
-                자료실 가기 <ArrowUpRight size={16} />
-              </Link>
-            }
-          />
-          {materials.length ? (
-            <div className="card-grid">
-              {materials.map((m) => (
-                <ResourceCard key={m.id} material={m} />
-              ))}
-            </div>
-          ) : (
-            <div className="plans">
-              {[
-                "자기 진단지",
-                "채널 기획 워크시트",
-                "업로드 전 체크리스트",
-              ].map((t, i) => (
-                <div className="plan-card" key={t}>
-                  <span className="plan-index">0{i + 1}</span>
-                  <FileText size={23} />
-                  <h3>{t}</h3>
-                  <p>자료 구성안 · 아직 게시되지 않았어요.</p>
-                  <span className="badge neutral">준비 중</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-        <section className="section news-section">
-          <SectionTitle
-            index="04"
-            eyebrow="STAY IN TOUCH"
-            title="함께할 때 필요한 소식"
-          />
-          <div className="news-grid">
-            <div>
-              <h3>공지사항</h3>
-              {data.notices.filter((n) => n.status === "published").length ? (
-                data.notices
-                  .filter((n) => n.status === "published")
-                  .map((n) => (
-                    <details className="notice-item" key={n.id}>
-                      <summary>
-                        {n.title}
-                        <span>+</span>
-                      </summary>
-                      <p className="prose">{n.body}</p>
-                    </details>
-                  ))
-              ) : (
-                <p className="muted">새로운 공지가 등록되면 알려드릴게요.</p>
-              )}
-            </div>
-            <div>
-              <h3>궁금한 점이 있나요?</h3>
-              <p className="muted">수업과 이용에 관한 문의를 남겨주세요.</p>
-              {data.settings.contact_url ? (
-                <a
-                  className="text-link"
-                  href={data.settings.contact_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {data.settings.contact_label || "문의하기"} ↗
-                </a>
-              ) : (
-                <p className="small muted">
-                  문의 채널은 운영자가 준비 중입니다.
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-      </div>
-    </>
-  );
-}
 function Classes() {
   const { data } = useData();
   return (
@@ -472,7 +269,7 @@ function ClassDetail({ id }: { id: string }) {
   );
   return (
     <div className="container">
-      <Link className="back-link" href="/classes">
+      <Link className="back-link" href="/">
         ← 수업 안내
       </Link>
       <PageHead eyebrow="CLASS / CONTENT PLANNING" title={c.title}>
@@ -737,7 +534,7 @@ function ResourceDetail({ id }: { id: string }) {
       <div className="container">
         <Restricted
           title="자료가 없거나 열람 권한이 없습니다."
-          href={user ? "/classes" : `/login?next=/resources/${id}`}
+          href={user ? "/" : `/login?next=/resources/${id}`}
         />
       </div>
     );
