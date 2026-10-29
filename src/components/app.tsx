@@ -202,7 +202,7 @@ function Shell() {
               {data.settings.contact_label || "문의하기"} ↗
             </a>
           ) : (
-            <span className="muted">문의 정보 준비 중</span>
+            <a className="muted" href="tel:01051667412">010-5166-7412</a>
           )}
         </div>
       </footer>
