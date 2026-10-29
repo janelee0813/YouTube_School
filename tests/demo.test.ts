@@ -45,7 +45,15 @@ const material = (overrides: Partial<Material> = {}): Material => ({
 });
 test("provided first-class topics seeded exactly; no invented schedules, files or contacts", () => {
   const s = seed();
-  assert.equal(s.courses[0].topics.length, 6);
+  assert.equal(s.courses[0].topics.length, 7);
+  assert.equal(
+    s.courses[0].topics[0],
+    "Preface — 뜬금없는 이야기. 해상도란 무엇인가?",
+  );
+  assert.equal(
+    s.courses[0].topics[1],
+    "나는 유튜브 하기에 잘 맞는 사람일까? (진단하기)",
+  );
   assert.equal(s.cohorts[0].starts_at, null);
   assert.equal(s.materials.length, 0);
   assert.equal(s.settings.contact_url, "");
@@ -265,4 +273,21 @@ test("return URLs stay on the current site", () => {
   assert.equal(safeNext("//evil.test"), "/records");
   assert.equal(safeNext("/\\evil.test"), "/records");
   assert.equal(safeNext("/classes/1"), "/classes/1");
+});
+
+test("existing demo outline gains the preface once while preserving records", () => {
+  const { s } = submitted();
+  s.courses[0].topics = s.courses[0].topics.slice(1);
+  const storage = { getItem: () => JSON.stringify(s) };
+  const upgraded = loadDemo(storage);
+  assert.deepEqual(upgraded.courses[0].topics, seed().courses[0].topics);
+  assert.deepEqual(upgraded.questions, s.questions);
+  const reloaded = loadDemo({ getItem: () => JSON.stringify(upgraded) });
+  assert.deepEqual(reloaded, upgraded);
+});
+
+test("outline upgrade preserves administrator-edited topics", () => {
+  const s = seed();
+  s.courses[0].topics = ["직접 작성한 수업 목차"];
+  assert.deepEqual(loadDemo({ getItem: () => JSON.stringify(s) }), s);
 });

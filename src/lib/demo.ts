@@ -1,5 +1,5 @@
 // Deliberately NOT a security boundary. All demo data lives in this browser.
-import { seed } from "./seed";
+import { seed, ids, topics } from "./seed";
 import type { Snapshot, Profile, Question } from "./types";
 import { enrolled, manages } from "./permissions";
 import { mutationSchema, type Mutation } from "./validation";
@@ -164,7 +164,19 @@ export function loadDemo(
   storage: Pick<Storage, "getItem"> = localStorage,
 ): Snapshot {
   const raw = storage.getItem(DEMO_KEY);
-  return raw ? JSON.parse(raw) : seed();
+  if (!raw) return seed();
+  const snapshot: Snapshot = JSON.parse(raw);
+  const course = snapshot.courses.find((c) => c.id === ids.course);
+  const previousTopics = topics.slice(1);
+  // Upgrade the untouched initial outline without replacing saved user content.
+  if (
+    course &&
+    course.topics.length === previousTopics.length &&
+    course.topics.every((topic, index) => topic === previousTopics[index])
+  ) {
+    course.topics = [...topics];
+  }
+  return snapshot;
 }
 export function persistDemo(
   storage: Pick<Storage, "getItem" | "setItem">,
