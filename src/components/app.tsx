@@ -266,7 +266,7 @@ function Home() {
             index="01"
             eyebrow="OUR CLASS"
             title="시작을 단단하게 만드는 수업"
-            description="기술보다 먼저, 내 채널의 방향부터 생각합니다."
+            description="기술보다 먼저, 내 채널의 방향부터 생각해야 합니다."
             action={
               <Link className="text-link" href="/classes">
                 모든 수업 <ArrowUpRight size={16} />
