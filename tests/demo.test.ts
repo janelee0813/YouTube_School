@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { seed, ids } from "../src/lib/seed";
+import { seed, ids, previousTopics } from "../src/lib/seed";
 import { mutateDemo, loadDemo, persistDemo, DEMO_KEY } from "../src/lib/demo";
 import { visibleSnapshot, readsMaterial } from "../src/lib/permissions";
 import {
@@ -45,14 +45,14 @@ const material = (overrides: Partial<Material> = {}): Material => ({
 });
 test("provided first-class topics seeded exactly; no invented schedules, files or contacts", () => {
   const s = seed();
-  assert.equal(s.courses[0].topics.length, 7);
+  assert.equal(s.courses[0].topics.length, 8);
   assert.equal(
     s.courses[0].topics[0],
-    "Preface — 뜬금없는 이야기. 해상도란 무엇인가?",
+    "Preface — 유튜브를 시작하는 목적 점검하기 (유튜브, 얼마 벌 수 있을까?)",
   );
   assert.equal(
     s.courses[0].topics[1],
-    "나는 유튜브 하기에 잘 맞는 사람일까? (진단하기)",
+    "뜬금없는 이야기. 해상도란 무엇인가?",
   );
   assert.equal(s.cohorts[0].starts_at, null);
   assert.equal(s.materials.length, 0);
@@ -282,7 +282,7 @@ test("return URLs stay on the current site", () => {
 
 test("existing demo outline gains the preface once while preserving records", () => {
   const { s } = submitted();
-  s.courses[0].topics = s.courses[0].topics.slice(1);
+  s.courses[0].topics = [...previousTopics];
   const storage = { getItem: () => JSON.stringify(s) };
   const upgraded = loadDemo(storage);
   assert.deepEqual(upgraded.courses[0].topics, seed().courses[0].topics);

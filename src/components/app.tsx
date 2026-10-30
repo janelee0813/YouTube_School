@@ -309,11 +309,11 @@ function ClassDetail({ id }: { id: string }) {
                 <details key={i}>
                   <summary>
                     <span className="topic-num">
-                      {String(
+                      {t.match(/^부록\d+/)?.[0] || String(
                         c.topics[0]?.startsWith("Preface") ? i : i + 1,
                       ).padStart(2, "0")}
                     </span>
-                    <span>{t}</span>
+                    <span>{t.replace(/^부록\d+\s*-\s*/, "")}</span>
                     <span className="plus">+</span>
                   </summary>
                   <p>이 주제의 세부 내용은 수업에서 함께 다룹니다.</p>

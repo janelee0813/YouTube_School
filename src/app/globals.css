@@ -757,6 +757,8 @@ nav > .nav-login {
   display: none;
 }
 .topic-num {
+  flex-shrink: 0;
+  white-space: nowrap;
   color: var(--neon-purple);
   font-family: var(--display);
   font-size: 12px;
